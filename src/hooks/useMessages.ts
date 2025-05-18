@@ -3,7 +3,8 @@ import { api } from '../lib/api';
 import type { Message, CreateMessagePayload } from '../types/api';
 
 const fetchMessages = async (conversationId: string): Promise<Message[]> => {
-  const { data } = await api.get<Message[]>(`/conversations/${conversationId}/messages`);
+  if (!conversationId) { return [] }
+  const { data } = await api.get<Message[]>(`/api/conversations/${conversationId}/messages`);
   return data;
 };
 
@@ -12,10 +13,10 @@ const postMessage = async (payload: CreateMessagePayload): Promise<Message> => {
   return data;
 };
 
-export function useMessages(conversationId: string) {
+export function useMessages(conversationId?: string) {
   return useQuery({
     queryKey: ['messages', conversationId],
-    queryFn: () => fetchMessages(conversationId),
+    queryFn: () => fetchMessages(conversationId!),
     enabled: !!conversationId,
   });
 }
