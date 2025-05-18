@@ -22,7 +22,7 @@ export interface CreateConversationResponse {
 }
 
 export interface CreateMessagePayload {
-  conversationId: string;
+  conversationId?: string;
   content: string;
 }
   

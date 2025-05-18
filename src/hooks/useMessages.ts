@@ -9,7 +9,8 @@ const fetchMessages = async (conversationId: string): Promise<Message[]> => {
 };
 
 const postMessage = async (payload: CreateMessagePayload): Promise<Message> => {
-  const { data } = await api.post<Message>('/messages', payload);
+  if (!payload.conversationId) { throw new Error('Conversation ID missing from message POST request.') };
+  const { data } = await api.post<Message>('/api/message', payload);
   return data;
 };
 
@@ -21,10 +22,25 @@ export function useMessages(conversationId?: string) {
   });
 }
 
-export function usePostMessage(conversationId: string) {
+export function usePostMessage(conversationId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (content: string) => postMessage({ conversationId, content }),
+    mutationFn: async (content: string) => { 
+      if (!conversationId) { throw new Error('Conversation ID missing from message POST request.') };
+
+      const previous = qc.getQueryData<Message[]>(['messages', conversationId]) || [];
+      const draft: Message = {
+        id: Date.now().toString(),
+        conversationId: conversationId,
+        sender: 'user',
+        content: content,
+        pinyin: [],
+        createdAt: '',
+      };
+      qc.setQueryData(['messages', conversationId], [...previous, draft]);
+
+      await postMessage({ conversationId, content });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['messages', conversationId] }),
   });
 }

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useDarkMode } from '../context/DarkModeContext';
 import type { Conversation, Message } from "../types/api";
-import { useMessages } from '../hooks/useMessages';
+import { useMessages, usePostMessage } from '../hooks/useMessages';
 
 interface MessagePaneProps {
   isMenuOpen: boolean,
@@ -14,6 +14,14 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
   const [showPinyin, setShowPinyin] = useState<Record<string, boolean>>({});
   const [inputText, setInputText] = useState('');
   const { data: messages = [], isLoading } = useMessages(selectedConversation?.id);
+  const postMessage = usePostMessage(selectedConversation?.id);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isLoading && bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isLoading, showPinyin]);
   
   const togglePinyin = (id: string) => {
     setShowPinyin((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -21,15 +29,7 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
 
   const sendMessage = () => {
     if (inputText.trim() && selectedConversation) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        conversationId: selectedConversation.id,
-        sender: 'user',
-        content: inputText,
-        pinyin: [],
-        createdAt: '',
-      };
-
+      postMessage.mutate(inputText);
       setInputText('');
     }
   };
@@ -69,6 +69,7 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
                     </>
                   )}
                 </div>
+                <div ref={bottomRef} />
               </div>
             ))}
           </div>
