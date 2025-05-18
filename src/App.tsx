@@ -1,44 +1,14 @@
 import React, { useState } from 'react';
 import { ConversationList } from './components/ConversationList';
-
-interface Conversation {
-  id: string;
-  bot: string;
-  messages: Message[];
-}
-
-interface Message {
-  id: string;
-  sender: 'user' | 'bot';
-  text: string;
-  pinyin?: string;
-}
-
-const mockConversations: Conversation[] = [
-  {
-    id: '1',
-    bot: 'Lily',
-    messages: [
-      { id: '1', sender: 'bot', text: '你好！你今天过得怎么样？', pinyin: 'Nǐ hǎo! Nǐ jīntiān guò dé zěnme yàng?' },
-      { id: '2', sender: 'user', text: '很好，谢谢你！', pinyin: 'Hěn hǎo, xièxiè nǐ!' },
-    ],
-  },
-  {
-    id: '2',
-    bot: 'Mark',
-    messages: [
-      { id: '1', sender: 'bot', text: '今天天气不错，你想出去玩吗？', pinyin: 'Jīntiān tiānqì bùcuò, nǐ xiǎng chūqù wán ma?' },
-      { id: '2', sender: 'user', text: '好的，我们去公园吧！', pinyin: 'Hǎo de, wǒmen qù gōngyuán ba!' },
-    ],
-  },
-];
+import { useDarkMode } from './context/DarkModeContext';
+import type { Conversation, Message } from './types/api'
 
 const ChatApp: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showPinyin, setShowPinyin] = useState<Record<string, boolean>>({});
   const [inputText, setInputText] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode } = useDarkMode();
 
   const togglePinyin = (id: string) => {
     setShowPinyin((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -48,8 +18,11 @@ const ChatApp: React.FC = () => {
     if (inputText.trim() && selectedConversation) {
       const newMessage: Message = {
         id: Date.now().toString(),
+        conversationId: selectedConversation.id,
         sender: 'user',
-        text: inputText,
+        content: inputText,
+        pinyin: [],
+        createdAt: '',
       };
 
       setSelectedConversation({
@@ -63,31 +36,13 @@ const ChatApp: React.FC = () => {
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-[#f7f3ea] text-gray-800'}`}>
-      {/* Left Side */}
-      { isMenuOpen && <ConversationList />}
-      {isMenuOpen && (
-        <div className={`w-1/4 border-r ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-[#fffbf6]'} flex flex-col`}>
-          <div className={`py-4 px-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} font-semibold text-xl flex justify-between`}>
-            <span>Chatbot</span>
-            <button className="text-sm underline" onClick={() => setIsMenuOpen(false)}>Close</button>
-          </div>
-          <div className="overflow-auto flex-1">
-            {mockConversations.map((conv) => (
-              <div
-                key={conv.id}
-                className={`px-6 py-4 cursor-pointer hover:${isDarkMode ? 'bg-gray-700' : 'bg-[#f2e9db]'} ${
-                  selectedConversation?.id === conv.id ? isDarkMode ? 'bg-gray-700' : 'bg-[#f2e9db]' : ''
-                }`}
-                onClick={() => setSelectedConversation(conv)}
-              >
-                {conv.bot}
-              </div>
-            ))}
-          </div>
-          <button className="p-4 border-t border-gray-300" onClick={() => setIsDarkMode(!isDarkMode)}>
-            Toggle {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-          </button>
-        </div>
+      {/* Conversations Menu */}
+      { isMenuOpen && (
+        <ConversationList
+          setIsMenuOpen={setIsMenuOpen}
+          selectedConversation={selectedConversation}
+          setSelectedConversation={setSelectedConversation}
+        />
       )}
 
       {/* Main Chat Area */}
@@ -110,8 +65,8 @@ const ChatApp: React.FC = () => {
                       msg.sender === 'user' ? isDarkMode ? 'bg-green-700' : 'bg-[#d0e7d2]' : isDarkMode ? 'bg-gray-700' : 'bg-[#f0e4d7]'
                     }`}
                   >
-                    <p>{msg.text}</p>
-                    {msg.sender === 'bot' && (
+                    <p>{msg.content}</p>
+                    {msg.sender === 'ai' && (
                       <>
                         {showPinyin[msg.id] && msg.pinyin && (
                           <p className="mt-1 text-sm italic text-gray-500">{msg.pinyin}</p>

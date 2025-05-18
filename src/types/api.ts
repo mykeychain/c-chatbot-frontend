@@ -1,8 +1,12 @@
 export interface Conversation {
   id: string;
   userId: string;
-  botId: string;
-  createdAt: string;
+  bot: {
+    id: string,
+    name: string,
+  };
+  createdAt: string,
+  messages: Message[],
 }
   
 export interface Message {
@@ -10,7 +14,7 @@ export interface Message {
   conversationId: string;
   sender: 'user' | 'ai';
   content: string;
-  pinyin: string;
+  pinyin: string[];
   createdAt: string;
 }
 

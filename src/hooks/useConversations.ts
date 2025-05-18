@@ -14,8 +14,9 @@ const createConversation = async (title: string): Promise<CreateConversationResp
 
 export function useConversations(userId: string) {
   return useQuery({
-    queryKey: ['conversations'],
-    queryFn: () => fetchConversations(userId),
+    queryKey: ['conversations', userId],
+    queryFn: async () => fetchConversations(userId),
+    staleTime: 1000 * 60 * 5,
   });
 }
 
