@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useDarkMode } from '../context/DarkModeContext';
 import type { Conversation } from "../types/api";
 import { useMessages, usePostMessage } from '../hooks/useMessages';
+import { MessageBubble } from './MessageBubble';
 
 interface MessagePaneProps {
   isMenuOpen: boolean,
@@ -11,7 +12,6 @@ interface MessagePaneProps {
 
 export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }: MessagePaneProps) {
   const { isDarkMode } = useDarkMode();
-  const [showPinyin, setShowPinyin] = useState<Record<string, boolean>>({});
   const [inputText, setInputText] = useState('');
   const { data: messages = [], isLoading } = useMessages(selectedConversation?.id);
   const postMessage = usePostMessage(selectedConversation?.id);
@@ -21,12 +21,8 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
     if (!isLoading && bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isLoading, showPinyin]);
+  }, [messages, isLoading]);
   
-  const togglePinyin = (id: string) => {
-    setShowPinyin((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
   const sendMessage = () => {
     if (inputText.trim() && selectedConversation) {
       postMessage.mutate(inputText);
@@ -49,38 +45,14 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
         </div>
         <span>User</span>
       </div>
-      {/* Messages */}
       {selectedConversation ? (
         <>
+          {/* Messages */}
           <div className="flex-1 overflow-auto p-6 space-y-4">
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-lg rounded-xl px-4 py-2 shadow-sm ${
-                    msg.sender === 'user' ? isDarkMode ? 'bg-[#108e94]' : 'bg-[#d0e7d2]' : isDarkMode ? 'bg-[#415a77]' : 'bg-[#f0e4d7]'
-                  }`}
-                >
-                  <p>{msg.content}</p>
-                  {msg.sender === 'ai' && (
-                    <>
-                      {showPinyin[msg.id] && msg.pinyin && (
-                        <p className="mt-1 text-sm italic text-gray-500">{msg.pinyin}</p>
-                      )}
-                      <div className="mt-2 flex gap-2 text-sm">
-                        <button className="underline" onClick={() => togglePinyin(msg.id)}>
-                          Pinyin
-                        </button>
-                        <button className="underline">Translate</button>
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div ref={bottomRef} />
-              </div>
+              <MessageBubble msg={msg}/>
             ))}
+            <div className={`h-0`} ref={bottomRef} />
           </div>
 
           {/* Input Area */}
