@@ -1,6 +1,7 @@
 import { useDarkMode } from '../context/DarkModeContext';
 import { useConversations } from '../hooks/useConversations';
 import type { Conversation } from '../types/api';
+import { ConversationItem } from './ConversationItem';
 
 interface ConversationListProps {
   setIsMenuOpen: (open: boolean) => void;
@@ -34,15 +35,11 @@ export function ConversationList({ setIsMenuOpen, selectedConversation, setSelec
       <div className="overflow-auto flex-1">
         {isLoading && <p>Loading</p>}
         {!isLoading && conversations.map((conv) => (
-          <div
-          key={conv.id}
-          className={`px-6 py-4 cursor-pointer hover:${isDarkMode ? 'bg-[#415a77]' : 'bg-[#f2e9db]'} ${
-              selectedConversation?.id === conv.id ? isDarkMode ? 'bg-[#415a77]' : 'bg-[#f2e9db]' : ''
-          }`}
-          onClick={() => setSelectedConversation(conv)}
-          >
-            {conv.bot.name}
-          </div>
+          <ConversationItem
+            conv={conv}
+            selectedConversation={selectedConversation}
+            setSelectedConversation={setSelectedConversation}
+          />
         ))}
       </div>
       <button className="p-4 border-t border-gray-300 cursor-pointer" onClick={() => toggleDarkMode()}>

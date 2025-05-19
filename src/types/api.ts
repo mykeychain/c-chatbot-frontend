@@ -6,6 +6,9 @@ export interface Conversation {
     name: string,
   };
   createdAt: string,
+  lastMessage: {
+    content: string,
+  }
 }
   
 export interface Message {
