@@ -10,7 +10,7 @@ const ChatApp: React.FC = () => {
   const { isDarkMode } = useDarkMode();
 
   return (
-    <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-[#f7f3ea] text-gray-800'}`}>
+    <div className={`flex h-screen ${isDarkMode ? 'bg-[#1b263b] text-[#e0e1dd]' : 'bg-[#f7f3ea] text-gray-800'}`}>
       { isMenuOpen && (
         <ConversationList
           setIsMenuOpen={setIsMenuOpen}
