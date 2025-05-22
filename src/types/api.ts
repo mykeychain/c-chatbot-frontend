@@ -4,6 +4,7 @@ export interface Conversation {
   bot: {
     id: string,
     name: string,
+    pictureUrl?: string,
   };
   createdAt: string,
   lastMessage: {
