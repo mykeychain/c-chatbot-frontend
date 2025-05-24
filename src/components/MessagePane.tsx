@@ -60,7 +60,7 @@ export function MessagePane({
           {/* Messages */}
           <div className="flex-1 overflow-auto p-6 space-y-4">
             {messages.map((msg) => (
-              <MessageBubble msg={msg}/>
+              <MessageBubble key={`message-${msg.id}`} msg={msg}/>
             ))}
             <div className={`h-0`} ref={bottomRef} />
           </div>
