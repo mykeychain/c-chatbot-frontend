@@ -22,11 +22,27 @@ export interface Message {
 }
 
 export interface CreateConversationResponse {
-  id: string;
+  userId: string;
+  botId: string;
 }
 
 export interface CreateMessagePayload {
   conversationId?: string;
   content: string;
+}
+
+export interface Bot {
+  id: string;
+  name: string;
+  pictureUrl?: string;
+}
+
+export interface AvailableBotsResponse {
+  bots: Bot[];
+}
+
+export interface CreateConversationPayload {
+  userId: string;
+  botId: string;
 }
   

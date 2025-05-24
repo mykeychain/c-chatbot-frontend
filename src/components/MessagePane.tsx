@@ -3,14 +3,23 @@ import { useDarkMode } from '../context/DarkModeContext';
 import type { Conversation } from "../types/api";
 import { useMessages, usePostMessage } from '../hooks/useMessages';
 import { MessageBubble } from './MessageBubble';
+import { BotSelectionView } from './BotSelectionView';
 
 interface MessagePaneProps {
   isMenuOpen: boolean,
   setIsMenuOpen: (open: boolean) => void;
   selectedConversation: Conversation | null;
+  userId: string;
+  onConversationCreated: (conversationId: string) => void;
 }
 
-export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }: MessagePaneProps) {
+export function MessagePane({ 
+  isMenuOpen, 
+  setIsMenuOpen, 
+  selectedConversation,
+  userId,
+  onConversationCreated
+}: MessagePaneProps) {
   const { isDarkMode } = useDarkMode();
   const [inputText, setInputText] = useState('');
   const { data: messages = [], isLoading } = useMessages(selectedConversation?.id);
@@ -44,6 +53,7 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
           )}
         </div>
         <span>User</span>
+        {/* <span>{selectedConversation?.bot.name || 'Select a Partner'}</span> */}
       </div>
       {selectedConversation ? (
         <>
@@ -76,9 +86,10 @@ export function MessagePane({ isMenuOpen, setIsMenuOpen, selectedConversation }:
           </div>
         </>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-gray-500 text-xl">
-          Select a conversation to start chatting
-        </div>
+        <BotSelectionView 
+          userId={userId} 
+          onConversationCreated={onConversationCreated}
+        />
       )}
     </div>
   )

@@ -7,10 +7,16 @@ interface ConversationListProps {
   setIsMenuOpen: (open: boolean) => void;
   selectedConversation: Conversation | null;
   setSelectedConversation: (conv: Conversation) => void;
+  userId: string;
 }
 
-export function ConversationList({ setIsMenuOpen, selectedConversation, setSelectedConversation }: ConversationListProps) {
-  const { data: conversations=[], isLoading } = useConversations('1');
+export function ConversationList({ 
+  setIsMenuOpen, 
+  selectedConversation, 
+  setSelectedConversation,
+  userId 
+}: ConversationListProps) {
+  const { data: conversations=[], isLoading } = useConversations(userId);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   
   return (
@@ -36,6 +42,7 @@ export function ConversationList({ setIsMenuOpen, selectedConversation, setSelec
         {isLoading && <p>Loading</p>}
         {!isLoading && conversations.map((conv) => (
           <ConversationItem
+            key={`conversation-item-${conv.id}`}
             conv={conv}
             selectedConversation={selectedConversation}
             setSelectedConversation={setSelectedConversation}
