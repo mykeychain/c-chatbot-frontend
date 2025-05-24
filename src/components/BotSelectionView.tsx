@@ -46,7 +46,9 @@ export function BotSelectionView({ userId, onConversationCreated }: BotSelection
             key={bot.id}
             onClick={() => handleBotSelect(bot)}
             disabled={isCreating}
-            className={`flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:${isDarkMode ? 'bg-[#415a77]' : 'bg-[#f2e9db]'} disabled:opacity-50`}
+            className={`flex flex-col items-center p-4 border rounded-lg cursor-pointer disabled:opacity-50 ${
+              isDarkMode ? 'hover:bg-[#415a77]' : 'hover:bg-[#f2e9db]'
+            }`}
           >
             {/* {bot.pictureUrl && (
               <img
