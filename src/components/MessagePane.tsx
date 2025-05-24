@@ -4,6 +4,7 @@ import type { Conversation } from "../types/api";
 import { useMessages, usePostMessage } from '../hooks/useMessages';
 import { MessageBubble } from './MessageBubble';
 import { BotSelectionView } from './BotSelectionView';
+import { DarkModeToggle } from './DarkModeToggle';
 
 interface MessagePaneProps {
   isMenuOpen: boolean,
@@ -40,9 +41,17 @@ export function MessagePane({
   };
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className={`
+      flex flex-col h-full
+      transition-colors duration-300 ease-in-out
+      ${isDarkMode ? 'text-[#e0e1dd]' : 'text-gray-800'}
+    `}>
       {/* Messages Pane Menu */}
-      <div className={`h-16 py-4 px-6 border-b ${isDarkMode ? 'border-[#415a77]' : 'border-gray-300'} font-semibold text-xl flex items-center justify-between`}>
+      <div className={`
+        h-16 py-4 px-6 border-b font-semibold text-xl flex items-center justify-between
+        transition-colors duration-300 ease-in-out
+        ${isDarkMode ? 'border-[#415a77]' : 'border-gray-300'}
+      `}>
         <div>
           {!isMenuOpen && (
             <button className="underline text-sm cursor-pointer" onClick={() => setIsMenuOpen(true)}>
@@ -52,31 +61,53 @@ export function MessagePane({
             </button>
           )}
         </div>
-        <span>User</span>
-        {/* <span>{selectedConversation?.bot.name || 'Select a Partner'}</span> */}
+        <div className="flex items-center gap-4">
+          <DarkModeToggle />
+          <span>User</span>
+        </div>
       </div>
       {selectedConversation ? (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-auto p-6 space-y-4">
-            {messages.map((msg) => (
-              <MessageBubble key={`message-${msg.id}`} msg={msg}/>
-            ))}
-            <div className={`h-0`} ref={bottomRef} />
+          <div className={`
+            flex-1 overflow-y-auto p-6
+            transition-colors duration-300 ease-in-out
+            ${isDarkMode ? 'bg-[#1A1A24]' : 'bg-[#fffbf6]'}
+          `}>
+            <div className="flex flex-col justify-end min-h-full">
+              <div className="space-y-4">
+                {messages.map((msg) => (
+                  <MessageBubble key={`message-${msg.id}`} msg={msg}/>
+                ))}
+                <div className="h-0" ref={bottomRef} />
+              </div>
+            </div>
           </div>
 
           {/* Input Area */}
-          <div className={`p-4 border-t ${isDarkMode ? 'border-[#415a77] bg-[#0d1b2a]' : 'border-gray-300 bg-[#fffbf6]'} flex gap-2`}>
+          <div className={`
+            p-4 border-t flex gap-2
+            transition-colors duration-300 ease-in-out
+            ${isDarkMode ? 'border-[#415a77] bg-[#1A1A24]' : 'border-gray-300 bg-[#fffbf6]'}
+          `}>
             <input
               type="text"
               placeholder="Type your message here..."
-              className={`flex-1 border ${isDarkMode ? 'bg-[#1b263b] border-[#415a77] text-[#e0e1dd]' : 'bg-white border-gray-300 text-gray-800'} rounded-xl px-4 py-2 focus:outline-none`}
+              className={`
+                flex-1 border rounded-xl px-4 py-2 focus:outline-none
+                transition-colors duration-300 ease-in-out
+                ${isDarkMode ? 'bg-[#0d1b2a] border-[#415a77] text-[#e0e1dd] placeholder-[#415a77]' : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'}
+              `}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
             />
             <button
-              className={`px-4 py-2 rounded-xl shadow cursor-pointer ${isDarkMode ? 'bg-[#17686c] text-[#e0e1dd]' : 'bg-[#a2c9a6] text-gray-800'}`}
+              className={`
+                px-4 py-2 rounded-xl shadow cursor-pointer
+                transition-colors duration-300 ease-in-out
+                ${isDarkMode ? 'bg-[#17686c] text-[#e0e1dd]' : 'bg-[#a2c9a6] text-gray-800'}
+              `}
               onClick={sendMessage}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -86,10 +117,12 @@ export function MessagePane({
           </div>
         </>
       ) : (
-        <BotSelectionView 
-          userId={userId} 
-          onConversationCreated={onConversationCreated}
-        />
+        <div className="flex-1">
+          <BotSelectionView 
+            userId={userId} 
+            onConversationCreated={onConversationCreated}
+          />
+        </div>
       )}
     </div>
   )

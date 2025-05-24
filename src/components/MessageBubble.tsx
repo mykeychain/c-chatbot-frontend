@@ -28,7 +28,7 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
         {msg.sender === 'ai' && (
           <>
             {showPinyin && msg.pinyin && (
-              <p className="mt-1 text-sm italic text-gray-500">{msg.pinyin}</p>
+              <p className={`mt-1 text-sm italic ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{msg.pinyin}</p>
             )}
             <div className="mt-2 flex gap-2 text-sm">
               <button className="underline cursor-pointer" onClick={() => togglePinyin()}>
