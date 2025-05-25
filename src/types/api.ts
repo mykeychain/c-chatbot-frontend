@@ -37,12 +37,13 @@ export interface Bot {
   pictureUrl?: string;
 }
 
-export interface AvailableBotsResponse {
-  bots: Bot[];
-}
-
 export interface CreateConversationPayload {
   userId: string;
   botId: string;
+}
+
+export interface TranslationResponse {
+  originalText: string;
+  translatedText: string;
 }
   

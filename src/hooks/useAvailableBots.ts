@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import type { AvailableBotsResponse, Bot } from '../types/api';
+import type { Bot } from '../types/api';
 
 const fetchAvailableBots = async (userId: string): Promise<Bot[]> => {
   const { data } = await api.get<Bot[]>(`/api/users/${userId}/available-bots`);
