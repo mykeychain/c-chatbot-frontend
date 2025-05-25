@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDarkMode } from '../context/DarkModeContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { TranslationTooltip } from './TranslationTooltip';
 import type { Message } from '../types/api';
 
 interface MessageBubbleProps {
@@ -11,21 +12,46 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
   const { isDarkMode } = useDarkMode();
   const [showPinyin, setShowPinyin] = useState(false);
   const [translation, setTranslation] = useState<{ original: string; translated: string } | null>(null);
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+  const [pendingRect, setPendingRect] = useState<DOMRect | null>(null);
   const { mutate: translate } = useTranslation();
   
   const togglePinyin = () => {
     setShowPinyin(!showPinyin);
   };
 
-  const handleTextSelection = () => {
+  const handleTextSelection = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) return;
+    if (!selection || selection.isCollapsed) {
+      setTranslation(null);
+      setSelectionRect(null);
+      setPendingRect(null);
+      return;
+    }
 
     const selectedText = selection.toString().trim();
-    if (!selectedText) return;
+    if (!selectedText) {
+      setTranslation(null);
+      setSelectionRect(null);
+      setPendingRect(null);
+      return;
+    }
 
     const messageElement = document.getElementById(`message-${msg.id}`);
-    if (!messageElement?.contains(selection.anchorNode)) return;
+    if (!messageElement?.contains(selection.anchorNode)) {
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    
+    // If there's no existing tooltip, update immediately
+    if (!translation) {
+      setSelectionRect(rect);
+    } else {
+      // If there's an existing tooltip, store the new position as pending
+      setPendingRect(rect);
+    }
 
     translate(selectedText, {
       onSuccess: (data) => {
@@ -33,9 +59,40 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
           original: data.originalText,
           translated: data.translatedText,
         });
+        // Update the position only after we have the new translation
+        if (pendingRect || rect) {
+          setSelectionRect(pendingRect || rect);
+          setPendingRect(null);
+        }
       },
     });
-  };
+  }, [msg.id, translate, translation, pendingRect]);
+
+  // Close translation tooltip when clicking outside of the message bubble
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const messageElement = document.getElementById(`message-${msg.id}`);
+      if (messageElement && !messageElement.contains(event.target as Node)) {
+        setTranslation(null);
+        setSelectionRect(null);
+        setPendingRect(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [msg.id]);
+
+  // Close translation tooltip when conversation changes
+  useEffect(() => {
+    return () => {
+      setTranslation(null);
+      setSelectionRect(null);
+      setPendingRect(null);
+    };
+  }, [msg.conversationId]);
 
   return (
     <div
@@ -47,13 +104,18 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
           msg.sender === 'user' ? isDarkMode ? 'bg-[#108e94]' : 'bg-[#d0e4d2]' : isDarkMode ? 'bg-[#415a77]' : 'bg-[#f0e4d7]'
         }`}
       >
-        <p id={`message-${msg.id}`} onMouseUp={msg.sender === 'ai' ? handleTextSelection : undefined}>
+        <p 
+          id={`message-${msg.id}`} 
+          onMouseUp={msg.sender === 'ai' ? handleTextSelection : undefined}
+          className="relative"
+        >
           {msg.content}
         </p>
-        {translation && (
-          <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            {translation.translated}
-          </p>
+        {msg.sender === 'ai' && translation && selectionRect && (
+          <TranslationTooltip 
+            translation={translation.translated} 
+            selectionRect={selectionRect}
+          />
         )}
         {msg.sender === 'ai' && (
           <>
@@ -64,7 +126,6 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
               <button className="underline cursor-pointer" onClick={() => togglePinyin()}>
                 Pinyin
               </button>
-              <button className="underline">Translate</button>
             </div>
           </>
         )}
