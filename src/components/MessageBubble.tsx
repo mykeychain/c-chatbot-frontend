@@ -130,6 +130,11 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
                 { formatPinyinText(msg.pinyin) }
               </p>
             )}
+            {showWholeTranslation && msg.translation && (
+              <p className={`mt-1 text-sm italic ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                { msg.translation }
+              </p>
+            )}
             
             {/* Buttons */}
             <div className="mt-2 flex gap-2 text-sm">

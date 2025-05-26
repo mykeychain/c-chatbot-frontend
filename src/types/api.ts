@@ -19,6 +19,7 @@ export interface Message {
   content: string;
   pinyin: string[];
   createdAt: string;
+  translation?: string;
 }
 
 export interface CreateConversationResponse {
