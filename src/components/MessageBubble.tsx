@@ -3,6 +3,7 @@ import { useDarkMode } from '../context/DarkModeContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { TranslationTooltip } from './TranslationTooltip';
 import { Tooltip } from './Tooltip';
+import { formatPinyinText } from '../utils/textProcessing';
 import type { Message } from '../types/api';
 
 interface MessageBubbleProps {
@@ -12,6 +13,7 @@ interface MessageBubbleProps {
 export function MessageBubble({ msg }: MessageBubbleProps) {
   const { isDarkMode } = useDarkMode();
   const [showPinyin, setShowPinyin] = useState(false);
+  const [showWholeTranslation, setShowWholeTranslation] = useState(false);
   const [translation, setTranslation] = useState<{ original: string; translated: string } | null>(null);
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const [pendingRect, setPendingRect] = useState<DOMRect | null>(null);
@@ -19,6 +21,10 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
   
   const togglePinyin = () => {
     setShowPinyin(!showPinyin);
+  };
+
+  const toggleWholeTranslation = () => {
+    setShowWholeTranslation(!showWholeTranslation);
   };
 
   const handleTextSelection = useCallback(() => {
@@ -120,7 +126,9 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
           <>
             {/* Pinyin subtitle */}
             {showPinyin && msg.pinyin && (
-              <p className={`mt-1 text-sm italic ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{msg.pinyin}</p>
+              <p className={`mt-1 text-sm italic ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                { formatPinyinText(msg.pinyin) }
+              </p>
             )}
             
             {/* Buttons */}
@@ -156,20 +164,22 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
               {/* Toggle Translation button */}
               <Tooltip text="Translate">
                 <button className={`flex items-center justify-center cursor-pointer border rounded-md w-9 h-5 transition-colors duration-200 ${
-                  showPinyin 
+                  showWholeTranslation 
                     ? isDarkMode 
                       ? 'bg-[#e0e1dd] border-[#e0e1dd]' 
                       : 'bg-gray-800 border-gray-800'
                     : isDarkMode
                       ? 'border-[#e0e1dd] hover:bg-[#e0e1dd]/60'
                       : 'border-gray-800 hover:bg-gray-800/60'
-                }`} >
+                  }`}
+                  onClick={() => toggleWholeTranslation()}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg" 
                     width="14"
                     height="14"
                     fill={
-                      showPinyin 
+                      showWholeTranslation 
                         ? isDarkMode ? '#415a77' : '#f0e4d7' 
                         : 'currentColor'} 
                     viewBox="0 0 16 16">
