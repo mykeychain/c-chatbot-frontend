@@ -1,9 +1,5 @@
 import { useDarkMode } from '../context/DarkModeContext';
 import type { Conversation } from "../types/api";
-import imgURL2 from '../../public/profile_picture_2.png';
-import imgURL3 from '../../public/profile_picture_3.png';
-import imgURL4 from '../../public/profile_picture_4.png';
-import imgURL5 from '../../public/profile_picture_5.png';
 
 interface ConversationItemProps {
   conv: Conversation;
@@ -13,7 +9,6 @@ interface ConversationItemProps {
 
 export function ConversationItem({ conv, selectedConversation, setSelectedConversation }: ConversationItemProps) {
   const { isDarkMode } = useDarkMode();
-  const pictureUrls = [imgURL2, imgURL3, imgURL4, imgURL5];
 
   return (
     <div
@@ -30,7 +25,7 @@ export function ConversationItem({ conv, selectedConversation, setSelectedConver
       onClick={() => setSelectedConversation(conv)}
     >
       <div className="flex-shrink-0">
-        <img src={pictureUrls[Number(conv.bot.id)-1]} className="h-12 w-12 rounded-full" alt='placeholder chatbot image' />
+        <img src={conv.bot.pictureUrl} className="h-12 w-12 rounded-full" alt='placeholder chatbot image' />
       </div>
       <div className="ml-3 min-w-0 flex-1">
         <div className="font-bold truncate">

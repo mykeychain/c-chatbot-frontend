@@ -35,6 +35,7 @@ export function ConversationList({
         transition-colors duration-300 ease-in-out
         ${isDarkMode ? 'border-[#415a77]' : 'border-gray-300'}
       `}>
+        {/* Header with logo -- click to clear selected conversation */}
         <div className="flex items-center gap-4">
           <div 
             className="flex flex-row items-center cursor-pointer hover:opacity-80 transition-opacity duration-200"
@@ -48,10 +49,11 @@ export function ConversationList({
             <span className="ps-2 font-semibold text-xl">Chatbot</span>
           </div>
         </div>
+        {/* Close Sidebar Button */}
         <button className="text-sm underline cursor-pointer" onClick={() => setIsMenuOpen(false)}>
-        <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z"/>
-        </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z"/>
+          </svg>
         </button>
       </div>
       {/* Conversation List */}
