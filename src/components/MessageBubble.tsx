@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDarkMode } from '../context/DarkModeContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { TranslationTooltip } from './TranslationTooltip';
@@ -16,7 +16,8 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
   const [showWholeTranslation, setShowWholeTranslation] = useState(false);
   const [translation, setTranslation] = useState<{ original: string; translated: string } | null>(null);
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
-  const [pendingRect, setPendingRect] = useState<DOMRect | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { mutate: translate } = useTranslation();
   
   const togglePinyin = () => {
@@ -32,7 +33,7 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
     if (!selection || selection.isCollapsed) {
       setTranslation(null);
       setSelectionRect(null);
-      setPendingRect(null);
+      setIsLoading(false);
       return;
     }
 
@@ -40,7 +41,7 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
     if (!selectedText) {
       setTranslation(null);
       setSelectionRect(null);
-      setPendingRect(null);
+      setIsLoading(false);
       return;
     }
 
@@ -49,28 +50,41 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
       return;
     }
 
+    // Cancel any pending translation
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
     
-    if (!translation) {
-      setSelectionRect(rect);
-    } else {
-      setPendingRect(rect);
-    }
+    setSelectionRect(rect);
+    setIsLoading(true);
+    setTranslation(null);
+
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
 
     translate(selectedText, {
       onSuccess: (data) => {
-        setTranslation({
-          original: data.originalText,
-          translated: data.translatedText,
-        });
-        if (pendingRect || rect) {
-          setSelectionRect(pendingRect || rect);
-          setPendingRect(null);
+        // Only update if we haven't been aborted
+        if (!abortControllerRef.current?.signal.aborted) {
+          setTranslation({
+            original: data.originalText,
+            translated: data.translatedText,
+          });
+          setIsLoading(false);
         }
       },
+      onError: () => {
+        // Handle error state if needed
+        if (!abortControllerRef.current?.signal.aborted) {
+          setIsLoading(false);
+          setSelectionRect(null);
+        }
+      }
     });
-  }, [msg.id, translate, translation, pendingRect]);
+  }, [msg.id, translate]);
 
   // Close translation tooltip when clicking outside of the message bubble
   useEffect(() => {
@@ -79,7 +93,10 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
       if (messageElement && !messageElement.contains(event.target as Node)) {
         setTranslation(null);
         setSelectionRect(null);
-        setPendingRect(null);
+        setIsLoading(false);
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
       }
     };
 
@@ -94,7 +111,10 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
     return () => {
       setTranslation(null);
       setSelectionRect(null);
-      setPendingRect(null);
+      setIsLoading(false);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [msg.conversationId]);
 
@@ -115,9 +135,10 @@ export function MessageBubble({ msg }: MessageBubbleProps) {
         >
           {msg.content}
         </p>
-        {msg.sender === 'ai' && translation && selectionRect && (
+        {msg.sender === 'ai' && selectionRect && (isLoading || translation) && (
           <TranslationTooltip 
-            translation={translation.translated} 
+            translation={translation?.translated || null}
+            isLoading={isLoading}
             selectionRect={selectionRect}
           />
         )}

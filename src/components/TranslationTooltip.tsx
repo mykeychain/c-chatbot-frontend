@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useDarkMode } from '../context/DarkModeContext';
+import { LoadingDots } from './LoadingDots';
 
 interface TranslationTooltipProps {
-  translation: string;
+  translation: string | null;
+  isLoading: boolean;
   selectionRect: DOMRect | null;
 }
 
-export function TranslationTooltip({ translation, selectionRect }: TranslationTooltipProps) {
+export function TranslationTooltip({ translation, isLoading, selectionRect }: TranslationTooltipProps) {
   const { isDarkMode } = useDarkMode();
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
@@ -28,7 +30,7 @@ export function TranslationTooltip({ translation, selectionRect }: TranslationTo
     <div
       className={`
         fixed z-50 transform -translate-x-1/2
-        px-4 py-2 rounded-lg shadow-lg
+        px-4 py-2 rounded-lg shadow-lg min-w-[60px] min-h-[24px]
         ${isDarkMode ? 'bg-[#CF8F8B] text-[#e0e1dd]' : 'bg-[#F2C3C3] text-gray-800'}
       `}
       style={{
@@ -36,7 +38,13 @@ export function TranslationTooltip({ translation, selectionRect }: TranslationTo
         left: `${position.left}px`,
       }}
     >
-      <div className="text-sm">{translation}</div>
+      <div className="text-sm ">
+        {isLoading ? (
+          <LoadingDots />
+        ) : (
+          translation
+        )}
+      </div>
       <div
         className={`
           absolute w-3 h-3 transform rotate-45
