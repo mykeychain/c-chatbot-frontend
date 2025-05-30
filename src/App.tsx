@@ -14,8 +14,7 @@ const ChatApp: React.FC = () => {
   const { isDarkMode } = useDarkMode();
   const queryClient = useQueryClient();
 
-  const handleConversationCreated = (conversationId: string) => {
-    // Invalidate and refetch conversations
+  const handleConversationCreated = () => {
     queryClient.invalidateQueries({ queryKey: ['conversations', TEMP_USER_ID] });
   };
 
